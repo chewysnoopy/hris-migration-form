@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workday Migration Entry · HRIS</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f8; min-height: 100vh; padding: 32px 16px; }
+  .container { max-width: 720px; margin: 0 auto; }
+  .header { background: #fff; border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; border: 1px solid #e2e6f0; display: flex; align-items: center; gap: 16px; }
+  .logo { width: 44px; height: 44px; background: #0052cc; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 18px; flex-shrink: 0; }
+  .header-text h1 { font-size: 17px; font-weight: 700; color: #172b4d; }
+  .header-text p { font-size: 13px; color: #6b778c; margin-top: 2px; }
+  .card { background: #fff; border-radius: 16px; padding: 24px; border: 1px solid #e2e6f0; margin-bottom: 16px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  label { display: block; font-size: 11px; font-weight: 700; color: #5e6c84; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+  input, select, textarea { width: 100%; border: 1.5px solid #dfe1e6; border-radius: 8px; padding: 9px 12px; font-size: 13px; color: #172b4d; background: #fff; outline: none; transition: border-color .15s, box-shadow .15s; font-family: inherit; }
+  input:focus, select:focus, textarea:focus { border-color: #0052cc; box-shadow: 0 0 0 2px rgba(0,82,204,.12); }
+  textarea { height: 90px; resize: vertical; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .chip { padding: 5px 13px; border-radius: 20px; border: 1.5px solid #dfe1e6; font-size: 12px; font-weight: 500; cursor: pointer; background: #fff; color: #344563; transition: all .15s; user-select: none; }
+  .chip:hover { border-color: #0052cc; color: #0052cc; }
+  .chip.on { background: #0052cc; color: #fff; border-color: #0052cc; }
+  .ai-tip { background: #f0f4ff; border: 1.5px solid #c5d4ff; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  .ai-tip-title { font-size: 12px; font-weight: 700; color: #0052cc; margin-bottom: 6px; }
+  .ai-tip-body { font-size: 12px; color: #344563; line-height: 1.6; }
+  .ai-tip-body code { background: #dde5ff; border-radius: 4px; padding: 1px 6px; font-family: monospace; font-size: 11px; color: #0052cc; }
+  .copy-prompt-btn { display: inline-block; margin-top: 8px; padding: 5px 12px; background: #0052cc; color: #fff; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background .15s; }
+  .copy-prompt-btn:hover { background: #0747a6; }
+  .copy-prompt-btn.copied { background: #00875a; }
+  .btn-primary { width: 100%; background: #0052cc; color: #fff; border: none; padding: 13px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s; font-family: inherit; }
+  .btn-primary:hover { background: #0747a6; }
+  .btn-ghost { width: 100%; background: #f4f5f7; color: #344563; border: none; padding: 13px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s; font-family: inherit; margin-top: 8px; }
+  .btn-ghost:hover { background: #ebecf0; }
+
+  /* Output card */
+  .output-card { background: #f0faf5; border: 1.5px solid #79dbb2; border-radius: 16px; padding: 24px; margin-bottom: 16px; }
+  .output-title { font-size: 14px; font-weight: 700; color: #006644; margin-bottom: 4px; }
+  .output-sub { font-size: 12px; color: #344563; margin-bottom: 16px; }
+  .output-section { margin-bottom: 14px; }
+  .output-label { font-size: 11px; font-weight: 700; color: #5e6c84; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .output-fields { background: #fff; border: 1.5px solid #dfe1e6; border-radius: 10px; overflow: hidden; }
+  .output-row { display: flex; border-bottom: 1px solid #f0f2f8; font-size: 13px; }
+  .output-row:last-child { border-bottom: none; }
+  .output-key { padding: 9px 12px; color: #6b778c; font-weight: 600; width: 150px; flex-shrink: 0; background: #f8f9fc; border-right: 1px solid #f0f2f8; }
+  .output-val { padding: 9px 12px; color: #172b4d; word-break: break-word; }
+  .output-desc-box { background: #fff; border: 1.5px solid #dfe1e6; border-radius: 10px; padding: 12px; font-size: 13px; color: #172b4d; line-height: 1.6; }
+  .copy-row-btn { width: 100%; background: #00875a; color: #fff; border: none; padding: 13px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .copy-row-btn:hover { background: #006644; }
+  .copy-row-btn.copied { background: #0052cc; }
+  .cf-link-btn { display: block; text-align: center; margin-top: 8px; padding: 13px; border-radius: 10px; border: 1.5px solid #dfe1e6; font-size: 14px; font-weight: 600; color: #0052cc; text-decoration: none; background: #fff; transition: background .15s; }
+  .cf-link-btn:hover { background: #f4f5f7; }
+  .instructions { background: #fffae6; border: 1.5px solid #ffe380; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; font-size: 12px; color: #344563; line-height: 1.7; }
+  .instructions strong { color: #172b4d; }
+  .hidden { display: none; }
+  @media (max-width: 520px) { .grid-2 { grid-template-columns: 1fr; } .output-key { width: 110px; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">W</div>
+    <div class="header-text">
+      <h1>Workday Migration Entry</h1>
+      <p>HRIS · Production Migration Notes · Thursday Log</p>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div id="step-form">
+    <div class="card">
+      <div class="grid-2">
+        <div class="field">
+          <label>Migration Date</label>
+          <input type="date" id="f-date">
+        </div>
+        <div class="field">
+          <label>Migrated By</label>
+          <input type="text" id="f-by" placeholder="Your name">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Type</label>
+          <select id="f-type">
+            <option>Scheduled</option>
+            <option>Hot Fix</option>
+            <option>Bug Fix</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>FS Ticket URL</label>
+          <input type="url" id="f-ticket" placeholder="https://...">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Category</label>
+          <select id="f-cat">
+            <option value="">Select...</option>
+            <option>Alert/Notification</option>
+            <option>Business Process</option>
+            <option>Configuration</option>
+            <option>Integration</option>
+            <option>Report</option>
+            <option>Security Role</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Functional Area</label>
+          <select id="f-area">
+            <option value="">Select...</option>
+            <option>Absence/Time Tracking</option>
+            <option>Benefits</option>
+            <option>Compensation</option>
+            <option>HCM</option>
+            <option>Operational</option>
+            <option>Payroll</option>
+            <option>Recruiting</option>
+            <option>Talent Management</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Stakeholders <span style="text-transform:none;font-weight:400;color:#6b778c">(select all that apply)</span></label>
+        <div class="chips">
+          <span class="chip" onclick="tog(this)">COE(s)</span>
+          <span class="chip" onclick="tog(this)">Company</span>
+          <span class="chip" onclick="tog(this)">Internal Ops</span>
+          <span class="chip" onclick="tog(this)">PBPs</span>
+          <span class="chip" onclick="tog(this)">People Leadership</span>
+          <span class="chip" onclick="tog(this)">Recruiting</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Documentation URL</label>
+        <input type="url" id="f-doc" placeholder="https://...">
+      </div>
+      <div class="ai-tip">
+        <div class="ai-tip-title">✨ Need help writing the description?</div>
+        <div class="ai-tip-body">
+          Copy this prompt, paste it into Claude along with your raw notes, then paste the result in the field below.<br><br>
+          <code>You are an HRIS writer. Convert these raw migration notes into a clear 2–3 sentence plain-language description for a Confluence page read by the HRIS team and COE stakeholders. No bullet points. Return only the description.</code>
+          <br>
+          <button class="copy-prompt-btn" id="cpb" onclick="copyPrompt()">Copy prompt</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea id="f-desc" placeholder="Write or paste your description here..."></textarea>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;border:none;background:transparent;">
+      <button class="btn-primary" onclick="generateEntry()">Generate Entry →</button>
+    </div>
+  </div>
+
+  <!-- Output -->
+  <div class="hidden" id="step-output">
+    <div class="output-card">
+      <div class="output-title">✅ Entry Ready!</div>
+      <div class="output-sub">Review the details below, then follow the steps to add it to Confluence.</div>
+
+      <div class="output-section">
+        <div class="output-label">Entry Details</div>
+        <div class="output-fields" id="out-fields"></div>
+      </div>
+
+      <div class="output-section">
+        <div class="output-label">Description</div>
+        <div class="output-desc-box" id="out-desc"></div>
+      </div>
+
+      <div class="instructions">
+        <strong>How to add this to Confluence:</strong><br>
+        1. Click <strong>"Copy Entry"</strong> below<br>
+        2. Click <strong>"Open Confluence Database"</strong> to go to the migration log<br>
+        3. Click <strong>"New entry"</strong> in the database and paste each field into the matching column
+      </div>
+
+      <button class="copy-row-btn" id="copy-row-btn" onclick="copyEntry()">📋 Copy Entry</button>
+      <a class="cf-link-btn" href="https://datadoghq.atlassian.net/wiki/spaces/PEOP/database/6433669198" target="_blank">Open Confluence Database →</a>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;border:none;background:transparent;">
+      <button class="btn-ghost" onclick="goBack()">← Log Another Entry</button>
+    </div>
+  </div>
+
+</div>
+<script>
+  var sel = [];
+  var entryData = {};
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+
+  function tog(el) {
+    el.classList.toggle('on');
+    var t = el.innerText;
+    var i = sel.indexOf(t);
+    i > -1 ? sel.splice(i, 1) : sel.push(t);
+  }
+
+  function copyPrompt() {
+    var p = 'You are an HRIS writer. Convert these raw migration notes into a clear 2-3 sentence plain-language description for a Confluence page read by the HRIS team and COE stakeholders. No bullet points. Return only the description.';
+    navigator.clipboard.writeText(p).then(function() {
+      var b = document.getElementById('cpb');
+      b.innerText = 'Copied!'; b.classList.add('copied');
+      setTimeout(function() { b.innerText = 'Copy prompt'; b.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function generateEntry() {
+    var by = document.getElementById('f-by').value.trim();
+    var desc = document.getElementById('f-desc').value.trim();
+    if (!by) return alert('Please enter your name in the Migrated By field.');
+    if (!desc) return alert('Please add a description before generating.');
+
+    entryData = {
+      date: document.getElementById('f-date').value,
+      by: by,
+      type: document.getElementById('f-type').value,
+      ticket: document.getElementById('f-ticket').value.trim() || '—',
+      cat: document.getElementById('f-cat').value || '—',
+      area: document.getElementById('f-area').value || '—',
+      stakeholders: sel.join(', ') || '—',
+      doc: document.getElementById('f-doc').value.trim() || '—',
+      desc: desc
+    };
+
+    var fields = [
+      ['Migration Date', entryData.date],
+      ['Migrated By', entryData.by],
+      ['Type', entryData.type],
+      ['FS Ticket', entryData.ticket],
+      ['Category', entryData.cat],
+      ['Functional Area', entryData.area],
+      ['Stakeholders', entryData.stakeholders],
+      ['Documentation', entryData.doc]
+    ];
+
+    document.getElementById('out-fields').innerHTML = fields.map(function(f) {
+      return '<div class="output-row"><div class="output-key">' + f[0] + '</div><div class="output-val">' + f[1] + '</div></div>';
+    }).join('');
+    document.getElementById('out-desc').innerText = entryData.desc;
+
+    document.getElementById('step-form').classList.add('hidden');
+    document.getElementById('step-output').classList.remove('hidden');
+    window.scrollTo(0, 0);
+  }
+
+  function copyEntry() {
+    var text = [
+      'Migration Date: ' + entryData.date,
+      'Migrated By: ' + entryData.by,
+      'Type: ' + entryData.type,
+      'FS Ticket: ' + entryData.ticket,
+      'Category: ' + entryData.cat,
+      'Functional Area: ' + entryData.area,
+      'Stakeholders: ' + entryData.stakeholders,
+      'Documentation: ' + entryData.doc,
+      'Description: ' + entryData.desc
+    ].join('\n');
+
+    navigator.clipboard.writeText(text).then(function() {
+      var b = document.getElementById('copy-row-btn');
+      b.innerText = '✅ Copied!'; b.classList.add('copied');
+      setTimeout(function() { b.innerHTML = '📋 Copy Entry'; b.classList.remove('copied'); }, 2500);
+    });
+  }
+
+  function goBack() {
+    document.getElementById('step-output').classList.add('hidden');
+    document.getElementById('step-form').classList.remove('hidden');
+    sel = [];
+    document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('f-by').value = '';
+    document.getElementById('f-type').value = 'Scheduled';
+    document.getElementById('f-ticket').value = '';
+    document.getElementById('f-cat').value = '';
+    document.getElementById('f-area').value = '';
+    document.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('on'); });
+    document.getElementById('f-doc').value = '';
+    document.getElementById('f-desc').value = '';
+    window.scrollTo(0, 0);
+  }
+</script>
+</body>
+</html>
